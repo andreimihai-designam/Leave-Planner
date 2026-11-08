@@ -10,6 +10,7 @@ let month = new Date(today.slice(0, 7) + "-01");
 let state = emptyState();
 let savedRaw = null;
 let storageReady = false;
+let persistenceRequested = false;
 let filter = "active";
 let returnFocus;
 function annualAllowance(year) {
@@ -30,6 +31,10 @@ function commit(data, error) {
     if (!storageReady) throw new Error("Stocare indisponibilă");
     savedRaw = writeState(localStorage, savedRaw, data);
     state = data;
+    if (!persistenceRequested) {
+      persistenceRequested = true;
+      void requestPersistentStorage(globalThis.navigator);
+    }
     return true;
   } catch {
     error.textContent = "Salvarea a eșuat. Verifică stocarea locală. Dacă ai modificat datele în altă filă, reîncarcă pagina.";

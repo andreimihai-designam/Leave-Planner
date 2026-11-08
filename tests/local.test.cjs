@@ -4,11 +4,16 @@ const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const vm = require("node:vm");
 
-function load(storage) {
+function load(storage, now = new Date(), storageManager) {
   const elements = new Map();
   const element = () => ({ addEventListener() {}, append() {}, replaceChildren() {}, setAttribute() {}, classList: { toggle() {} } });
   const context = vm.createContext({
     localStorage: storage,
+    navigator: { storage: storageManager },
+    Date: class extends Date {
+      constructor(...args) { super(...(args.length ? args : [now.getTime()])); }
+      static now() { return now.getTime(); }
+    },
     document: {
       getElementById(id) {
         if (!elements.has(id)) elements.set(id, element());
@@ -59,6 +64,27 @@ test("local state survives a fresh application load with balances and history", 
   assert.throws(() => reload("decodeState(JSON.stringify({ ...state, entries: [state.entries[0], state.entries[0]] }))"), /Înregistrare/);
   assert.equal(reload("decodeState(JSON.stringify(state)).entries[0].status"), "Anulat");
   assert.equal(load(storage)("state.entries[0].status"), "Anulat");
+});
+
+test("leave is still present after eleven simulated days and persistence is optional", async () => {
+  const items = new Map();
+  const storage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };
+  let requests = 0;
+  const first = load(storage, new Date("2026-11-08T12:00:00Z"), {
+    async persisted() { return false; },
+    async persist() { requests++; throw new Error("Denied"); },
+  });
+  assert.equal(first(`saveEntry({
+    id: "stored", start: "2026-11-20", end: "2026-11-20", type: leaveType,
+    status: "Planificat", notes: "Test"
+  }, "Adăugat", {})`), true);
+  assert.equal(first(`saveEntry({ ...state.entries[0], notes: "Actualizat" }, "Modificat", {})`), true);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(requests, 1);
+  const reopened = load(storage, new Date("2026-11-19T12:00:00Z"));
+  assert.equal(reopened("state.entries[0].notes"), "Actualizat");
+  assert.equal(reopened("state.audit.length"), 2);
+  assert.equal(reopened("balance(2026).available"), 6);
 });
 
 test("carryover expires after May 31, funds early leave first, and never carries twice", () => {

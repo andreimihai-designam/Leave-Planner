@@ -53,3 +53,14 @@ function writeState(storage, previous, data) {
   storage.setItem(storageKey, raw);
   return raw;
 }
+
+async function requestPersistentStorage(browser) {
+  try {
+    const storageManager = browser?.storage;
+    if (await storageManager?.persisted?.()) return true;
+    return (await storageManager?.persist?.()) === true;
+  } catch {
+    // Local saves still work when the browser declines extra protection.
+    return false;
+  }
+}

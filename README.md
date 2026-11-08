@@ -12,7 +12,7 @@ A Romanian-language leave planner that runs in the browser. The portfolio demo o
 
 ## Run locally
 
-Open `index.html` in a browser. Keep the `local/` folder next to it. The app uses plain HTML, CSS, and JavaScript and needs no build step, account, or backend. Browser storage is scoped to the browser and the location where the app is opened.
+Open `index.html` in a browser. Keep the `local/` folder next to it. The app uses plain HTML, CSS, and JavaScript and needs no build step, account, or backend. Records have no app-imposed expiration and survive ordinary browser restarts. The app requests persistent storage on save where supported. Browser storage is scoped to the browser profile and the location where the app is opened. Use JSON backup to transfer records or protect them from browser data clearing.
 
 ## Project structure
 
