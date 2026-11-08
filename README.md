@@ -1,12 +1,12 @@
 # JARVIS Leave Planner
 
-A Romanian-language leave planner that runs in the browser. The portfolio demo opens with an empty register and uses sample annual allowances.
+A Romanian-language leave planner that runs in the browser. The portfolio demo opens with an empty register.
 
 ## What it does
 
 - Plans leave by day or date range in a responsive calendar.
 - Calculates deductible days across years, skipping weekends and Romanian statutory holidays. Movable holidays use Orthodox dates.
-- Allocates sample annual leave and uses the previous year's remaining days first for leave through May 31.
+- Automatically allocates 7 days in 2026 and 20 days at the start of every year from 2027. Uses the previous year's remaining days first for leave through May 31, inclusive.
 - Supports editing, duplication, cancellation with history, soft deletion, and restoration.
 - Stores records in the current browser with JSON export and import.
 

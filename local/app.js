@@ -13,7 +13,7 @@ let storageReady = false;
 let filter = "active";
 let returnFocus;
 function annualAllowance(year) {
-  return year === 2026 ? 10 : 20;
+  return year === 2026 ? 7 : 20;
 }
 
 try {

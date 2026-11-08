@@ -30,8 +30,8 @@ test("local state survives a fresh application load with balances and history", 
   const storage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };
   const run = load(storage);
   assert.equal(run("state.entries.length"), 0);
-  assert.equal(run("balance(2026).available"), 10);
-  assert.equal(run("balance(2027, 1).available"), 30);
+  assert.equal(run("balance(2026).available"), 7);
+  assert.equal(run("balance(2027, 1).available"), 27);
   assert.equal(run("balance(2027, 6).available"), 20);
   assert.equal(run("balance(2028, 1).available"), 40);
   run(`const leave = { id: "personal", start: "2026-12-31", end: "2027-01-04", type: leaveType, status: "Planificat", notes: "" };`);
@@ -43,14 +43,14 @@ test("local state survives a fresh application load with balances and history", 
   `), true);
   const reload = load(storage);
   assert.equal(reload("state.audit.length"), 1);
-  assert.equal(reload("balance(2026).available"), 9);
-  assert.equal(reload("balance(2027, 1).available"), 28);
+  assert.equal(reload("balance(2026).available"), 6);
+  assert.equal(reload("balance(2027, 1).available"), 25);
   assert.equal(reload("balance(2027, 6).available"), 20);
   assert.match(reload("validate({ ...state.entries[0], id: 'another' })"), /suprapune/);
   assert.equal(reload("saveEntry({ ...state.entries[0], deleted: true }, 'Șters', {})"), true);
-  assert.equal(load(storage)("balance(2026).available"), 10);
+  assert.equal(load(storage)("balance(2026).available"), 7);
   assert.equal(reload("saveEntry({ ...state.entries[0], deleted: false }, 'Restaurat', {})"), true);
-  assert.equal(load(storage)("balance(2026).available"), 9);
+  assert.equal(load(storage)("balance(2026).available"), 6);
   assert.equal(reload("saveEntry({ ...state.entries[0], status: 'Anulat' }, 'Anulat', {})"), true);
   assert.equal(load(storage)("state.audit.length"), 4);
   assert.equal(load(storage)("balance(2027).available"), 20);
@@ -70,14 +70,14 @@ test("carryover expires after May 31, funds early leave first, and never carries
     const early = { id: "early", start: "2027-05-31", end: "2027-05-31", type: leaveType, status: "Planificat", notes: "" };
     const late = { ...early, id: "late", start: "2027-06-02", end: "2027-06-02" };
   `);
-  assert.equal(run("balance(2027, 5).available"), 10);
+  assert.equal(run("balance(2027, 5).available"), 7);
   assert.equal(run("validate(early)"), "");
   assert.match(run("validate(late)"), /Sold insuficient/);
   assert.equal(run("saveEntry(early, 'Adăugat', {})"), true);
-  assert.equal(run("balance(2027, 5).carried"), 9);
+  assert.equal(run("balance(2027, 5).carried"), 6);
   assert.equal(run("balance(2027, 6).available"), 0);
   assert.equal(run("balance(2028, 1).carried"), 0);
-  assert.match(run(`validate({ ...early, id: "prior", start: "2026-12-17", end: "2026-12-31" })`), /Sold insuficient pentru anul 2027/);
+  assert.match(run(`validate({ ...early, id: "prior", start: "2026-12-22", end: "2026-12-31" })`), /Sold insuficient pentru anul 2027/);
 });
 
 test("calendar excludes Romanian holidays and weekends in the supported period", () => {
