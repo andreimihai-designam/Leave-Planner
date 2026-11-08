@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JARVIS Leave Planner</title>
+<link rel="stylesheet" href="local/obsidian.css">
+<script src="local/storage.js" defer></script>
+<script src="local/calendar.js" defer></script>
+<script src="local/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true">J</span><div><strong>JARVIS</strong><small>LEAVE PLANNER</small></div></div>
+  <span class="badge">Portfolio demo · v0.3.4</span>
+</header>
+<main id="main" tabindex="-1">
+  <div class="intro">
+    <div><p class="eyebrow">PLANIFICARE PERSONALĂ</p><h1>Concediile mele</h1><p class="muted">Demo de portofoliu · Datele sunt salvate în acest browser.</p></div>
+    <button class="primary" id="add">＋ Adaugă concediu</button>
+  </div>
+  <section class="stats" aria-label="Sold anual">
+    <article><span>Disponibile <span id="year"></span></span><strong id="available"></strong><small id="carry">zile de concediu</small></article>
+    <article><span>Rezervate</span><strong id="reserved"></strong><small>planificate și în așteptare</small></article>
+    <article><span>Efectuate</span><strong id="used"></strong><small>zile confirmate</small></article>
+  </section>
+  <div class="actions">
+    <span class="badge" id="allocation">Alocare anuală</span>
+    <button id="export">Exportă backup</button>
+    <button id="import">Importă backup</button>
+    <input type="file" id="backup-file" accept=".json,application/json" hidden>
+  </div>
+  <p id="feedback" role="status"></p>
+  <div class="workspace">
+    <section class="panel" aria-labelledby="month">
+      <div class="panel-head">
+        <div><p class="eyebrow">CALENDAR</p><h2 id="month" aria-live="polite"></h2></div>
+        <div class="arrows"><button id="prev" aria-label="Luna anterioară">‹</button><button id="next" aria-label="Luna următoare">›</button></div>
+      </div>
+      <div class="week" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mie</span><span>Joi</span><span>Vin</span><span>Sâm</span><span>Dum</span></div>
+      <div class="calendar" id="calendar" aria-label="Zilele lunii"></div>
+      <p class="legend">
+        <span><span class="legend-key leave" aria-hidden="true">●</span> Concediu activ</span>
+        <span><span class="legend-key holiday" aria-hidden="true">✦</span> Sărbătoare legală</span>
+        <span><span class="legend-key weekend" aria-hidden="true"></span> Weekend</span>
+        <span><span class="legend-key workday" aria-hidden="true"></span> Zi lucrătoare</span>
+      </p>
+    </section>
+    <section class="panel" aria-labelledby="entries-title">
+      <div class="panel-head"><div><p class="eyebrow">REGISTRU</p><h2 id="entries-title">Înregistrări</h2></div></div>
+      <div class="filters" aria-label="Filtru înregistrări">
+        <button data-filter="active" aria-pressed="true">Active</button>
+        <button data-filter="history" aria-pressed="false">Istoric</button>
+        <button data-filter="deleted" aria-pressed="false">Șterse</button>
+      </div>
+      <div id="entries"></div>
+    </section>
+  </div>
+</main>
+<dialog id="dialog" aria-labelledby="dialog-title">
+  <div class="panel-head"><h2 id="dialog-title"></h2><button id="close" aria-label="Închide">×</button></div>
+  <div id="dialog-body"></div>
+</dialog>
+<template id="leave-form">
+  <form>
+    <div class="fields">
+      <label>Data de început<input name="start" type="date" required></label>
+      <label>Data de sfârșit<input name="end" type="date" required></label>
+    </div>
+    <div class="fields">
+      <label>Tip<select name="type"><option>Concediu de odihnă</option><option>Altă absență</option></select></label>
+      <label>Stare<select name="status"><option>Planificat</option><option>În așteptare</option><option>Efectuat</option></select></label>
+    </div>
+    <label>Notițe <small>(opțional)</small><textarea name="notes" rows="3" maxlength="500"></textarea></label>
+    <p class="estimate" aria-live="polite"></p>
+    <p class="error" role="alert"></p>
+    <button type="submit" class="primary">Salvează concediul</button>
+  </form>
+</template>
+</body>
+</html>
+
