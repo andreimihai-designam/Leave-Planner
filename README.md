@@ -1,6 +1,6 @@
-# JARVIS Leave Planner
+# Leave Planner
 
-A Romanian-language leave planner that runs in the browser. The portfolio demo opens with an empty register.
+A Romanian-language leave planner that runs in the browser. The app starts with an empty register.
 
 ## What it does
 

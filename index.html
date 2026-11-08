@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JARVIS Leave Planner</title>
+<title>Leave Planner</title>
 <link rel="stylesheet" href="local/obsidian.css">
 <script src="local/storage.js" defer></script>
 <script src="local/calendar.js" defer></script>
@@ -12,12 +12,11 @@
 <body>
 <a class="skip" href="#main">Sari la conținut</a>
 <header class="top">
-  <div class="brand"><span class="mark" aria-hidden="true">J</span><div><strong>JARVIS</strong><small>LEAVE PLANNER</small></div></div>
-  <span class="badge">Portfolio demo · v0.3.6</span>
+  <strong class="brand">Leave Planner</strong>
 </header>
 <main id="main" tabindex="-1">
   <div class="intro">
-    <div><p class="eyebrow">PLANIFICARE PERSONALĂ</p><h1>Concediile mele</h1><p class="muted">Demo de portofoliu · Datele rămân în acest browser după închidere. Pentru alt dispozitiv, folosește backupul.</p></div>
+    <div><p class="eyebrow">PLANIFICARE PERSONALĂ</p><h1>Concediile mele</h1></div>
     <button class="primary" id="add">＋ Adaugă concediu</button>
   </div>
   <section class="stats" aria-label="Sold anual">
@@ -26,7 +25,6 @@
     <article><span>Efectuate</span><strong id="used"></strong><small>zile confirmate</small></article>
   </section>
   <div class="actions">
-    <span class="badge" id="allocation">Alocare anuală</span>
     <button id="export">Exportă backup</button>
     <button id="import">Importă backup</button>
     <input type="file" id="backup-file" accept=".json,application/json" hidden>

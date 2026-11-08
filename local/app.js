@@ -139,7 +139,6 @@ function render() {
   byId("reserved").textContent = totals.reserved;
   byId("used").textContent = totals.used;
   byId("month").textContent = monthFormat.format(month);
-  byId("allocation").textContent = "Alocare " + year + " · " + annualAllowance(year) + " zile";
   byId("prev").disabled = dayKey(month) === minDate;
   byId("next").disabled = dayKey(month) === maxYear + "-12-01";
   const calendar = byId("calendar");
@@ -468,7 +467,7 @@ byId("backup-file").addEventListener("change", async event => {
       if (commit(data, error)) finish("Backup importat");
     }, "primary"));
   } catch {
-    byId("feedback").textContent = "Fișierul nu este un backup JARVIS valid. Datele locale au fost păstrate.";
+    byId("feedback").textContent = "Fișierul nu este un backup Leave Planner valid. Datele locale au fost păstrate.";
   }
 });
 render();
