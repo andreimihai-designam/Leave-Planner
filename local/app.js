@@ -89,13 +89,13 @@ function projectedBalances(entry) {
   return balances([...state.entries.filter(item => item.id !== entry.id), entry]);
 }
 
-function validate(entry) {
+function validate(entry, allowNonWorkingDay = false) {
   if (!entry.start || !entry.end) return "Completează ambele date.";
   if (entry.end < entry.start) return "Data de sfârșit trebuie să fie în aceeași zi sau după data de început.";
   if (!validDate(entry.start) || !validDate(entry.end)) return "Alege date între " + minYear + " și " + maxYear + ".";
   if (!active(entry) || entry.type !== leaveType) return "";
   const days = eligibleDays(entry);
-  if (!days.length) return "Intervalul nu conține zile lucrătoare deductibile.";
+  if (!days.length) return allowNonWorkingDay ? "" : "Intervalul nu conține zile lucrătoare deductibile.";
   const selected = new Set(days);
   const conflict = state.entries.filter(active).find((other) => other.id !== entry.id && eligibleDays(other).some((day) => selected.has(day)));
   if (conflict) return "Intervalul se suprapune cu " + rangeLabel(conflict) + ".";
@@ -209,7 +209,12 @@ function showDay(key) {
   const holiday = holidaysFor(Number(key.slice(0, 4))).get(key);
   if (holiday) body.append(paragraph(holiday, "detail"));
   const matches = state.entries.filter((entry) => active(entry) && entry.start <= key && key <= entry.end);
-  for (const entry of matches) body.append(entryButton(entry));
+  for (const entry of matches) {
+    body.append(entryButton(entry));
+    const remove = button("Șterge această zi", () => confirmDeleteDay(entry, key), "danger");
+    remove.setAttribute("aria-label", "Șterge această zi · " + entry.type + " · " + rangeLabel(entry));
+    actions(remove);
+  }
   if (!matches.length) body.append(paragraph("Nicio înregistrare activă pentru această zi.", "muted"));
   actions(button("Adaugă pentru această zi", () => showForm("create", { start: key, end: key }), "primary"));
 }
@@ -291,7 +296,7 @@ function showForm(mode, source = {}) {
       error.textContent = problem;
       return;
     }
-    if (mode !== "edit") entry.id = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, "0")).join("");
+    if (mode !== "edit") entry.id = newEntryId();
     const label = mode === "edit" ? "Înregistrare modificată" : mode === "copy" ? "Înregistrare duplicată" : "Înregistrare adăugată";
     if (saveEntry(entry, label, error)) {
       month = new Date(entry.start.slice(0, 7) + "-01");
@@ -300,6 +305,57 @@ function showForm(mode, source = {}) {
   });
   preview();
   form.elements.start.focus();
+}
+
+function newEntryId() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function adjacentDay(key, offset) {
+  const date = new Date(key);
+  date.setUTCDate(date.getUTCDate() + offset);
+  return dayKey(date);
+}
+
+function deleteDay(entry, key, error) {
+  if (entry.start === entry.end) {
+    const deleted = { ...entry, deleted: true };
+    return saveEntry(deleted, "Zi de concediu ștearsă", error) ? deleted : null;
+  }
+  const remaining = [];
+  if (entry.start < key) remaining.push({ ...entry, end: adjacentDay(key, -1) });
+  if (entry.end > key) remaining.push({
+    ...entry, id: remaining.length ? newEntryId() : entry.id, start: adjacentDay(key, 1),
+  });
+  const deleted = { ...entry, id: newEntryId(), start: key, end: key, deleted: true };
+  const at = new Date().toISOString();
+  const audit = [
+    ...state.audit,
+    ...remaining.map(item => ({ id: item.id, label: "Zi eliminată din interval · " + key, at })),
+    { id: deleted.id, label: "Zi ștearsă din intervalul " + rangeLabel(entry), at },
+  ];
+  const entries = state.entries.flatMap(item => item.id === entry.id ? [...remaining, deleted] : [item]);
+  return commit({ ...state, entries, audit }, error) ? deleted : null;
+}
+
+function offerRestore(entry, label) {
+  finish(label);
+  byId("feedback").append(" ", button("Anulează ștergerea", () => confirmChange(entry, "restore")));
+}
+
+function confirmDeleteDay(entry, key) {
+  open("Șterge această zi");
+  const selected = { ...entry, start: key, end: key };
+  body.append(paragraph(rangeLabel(selected)));
+  body.append(paragraph("Ziua va fi mutată în Șterse. Celelalte zile din interval rămân în calendar."));
+  if (entry.type === leaveType) body.append(paragraph("Impact asupra soldului · " + estimateText(selected) + "."));
+  const error = paragraph("", "error");
+  error.setAttribute("role", "alert");
+  body.append(error);
+  actions(button("Înapoi", () => showDay(key)), button("Confirmă ștergerea zilei", () => {
+    const deleted = deleteDay(entry, key, error);
+    if (deleted) offerRestore(deleted, "Zi mutată în Șterse");
+  }, "danger"));
 }
 
 function confirmChange(entry, operation) {
@@ -333,7 +389,7 @@ function confirmChange(entry, operation) {
       return;
     }
     if (operation === "restore") {
-      const problem = validate({ ...entry, deleted: false });
+      const problem = validate({ ...entry, deleted: false }, true);
       if (problem) {
         error.textContent = problem;
         return;
@@ -344,10 +400,7 @@ function confirmChange(entry, operation) {
     if (operation === "delete") {
       const label = "Înregistrare mutată în Șterse";
       const deleted = { ...entry, deleted: true };
-      if (saveEntry(deleted, label, error)) {
-        finish(label);
-        byId("feedback").append(" ", button("Anulează ștergerea", () => confirmChange(deleted, "restore")));
-      }
+      if (saveEntry(deleted, label, error)) offerRestore(deleted, label);
     }
     if (operation === "cancel") {
       const label = "Concediu anulat";

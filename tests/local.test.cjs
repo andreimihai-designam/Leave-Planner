@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
+const { webcrypto } = require("node:crypto");
 const vm = require("node:vm");
 
 function load(storage, now = new Date(), storageManager) {
@@ -9,6 +10,7 @@ function load(storage, now = new Date(), storageManager) {
   const element = () => ({ addEventListener() {}, append() {}, replaceChildren() {}, setAttribute() {}, classList: { toggle() {} } });
   const context = vm.createContext({
     localStorage: storage,
+    crypto: webcrypto,
     navigator: { storage: storageManager },
     Date: class extends Date {
       constructor(...args) { super(...(args.length ? args : [now.getTime()])); }
@@ -64,6 +66,38 @@ test("local state survives a fresh application load with balances and history", 
   assert.throws(() => reload("decodeState(JSON.stringify({ ...state, entries: [state.entries[0], state.entries[0]] }))"), /Înregistrare/);
   assert.equal(reload("decodeState(JSON.stringify(state)).entries[0].status"), "Anulat");
   assert.equal(load(storage)("state.entries[0].status"), "Anulat");
+});
+
+test("deleting a calendar day preserves the rest of the interval and allows restoration", () => {
+  const items = new Map();
+  const storage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };
+  const run = load(storage);
+  run(`
+    const entry = { id: "interval", start: "2026-11-16", end: "2026-11-20",
+      type: leaveType, status: "Planificat", notes: "Exemplu" };
+    saveEntry(entry, "Adăugat", {});
+    const deleted = deleteDay(entry, "2026-11-18", {});
+  `);
+  const reopened = load(storage);
+  assert.equal(reopened("balance(2026).reserved"), 4);
+  assert.equal(reopened(`state.entries.filter(active).map(e => e.start + "/" + e.end).join(",")`),
+    "2026-11-16/2026-11-17,2026-11-19/2026-11-20");
+  assert.equal(reopened(`state.entries.find(e => e.deleted).start`), "2026-11-18");
+  assert.equal(reopened(`
+    const restored = { ...state.entries.find(e => e.deleted), deleted: false };
+    validate(restored, true) === "" && saveEntry(restored, "Restaurat", {});
+  `), true);
+  assert.equal(load(storage)("balance(2026).reserved"), 5);
+  assert.equal(reopened(`deleteDay(restored, restored.start, {}).id === restored.id`), true);
+  assert.equal(reopened("balance(2026).reserved"), 4);
+  assert.equal(reopened(`
+    const weekend = { id: "weekend", start: "2026-11-27", end: "2026-11-29",
+      type: leaveType, status: "Planificat", notes: "" };
+    saveEntry(weekend, "Adăugat", {});
+    const removedWeekend = deleteDay(weekend, "2026-11-28", {});
+    validate({ ...removedWeekend, deleted: false }, true);
+  `), "");
+  assert.equal(load(storage)("balance(2026).reserved"), 5);
 });
 
 test("leave is still present after eleven simulated days and persistence is optional", async () => {
