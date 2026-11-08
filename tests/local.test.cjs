@@ -4,10 +4,19 @@ const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
 const { webcrypto } = require("node:crypto");
 const vm = require("node:vm");
+const html = readFileSync(join(__dirname, "..", "index.html"), "utf8");
+const pageIds = new Set(Array.from(html.matchAll(/\bid="([^"]+)"/g), match => match[1]));
 
 function load(storage, now = new Date(), storageManager) {
   const elements = new Map();
-  const element = () => ({ addEventListener() {}, append() {}, replaceChildren() {}, setAttribute() {}, classList: { toggle() {} } });
+  const element = tagName => ({
+    tagName, children: [],
+    addEventListener() {},
+    append(...children) { this.children.push(...children); },
+    replaceChildren(...children) { this.children = children; },
+    setAttribute() {},
+    classList: { toggle() {} },
+  });
   const context = vm.createContext({
     localStorage: storage,
     crypto: webcrypto,
@@ -18,6 +27,7 @@ function load(storage, now = new Date(), storageManager) {
     },
     document: {
       getElementById(id) {
+        if (!pageIds.has(id)) return null;
         if (!elements.has(id)) elements.set(id, element());
         return elements.get(id);
       },
@@ -31,6 +41,14 @@ function load(storage, now = new Date(), storageManager) {
   }
   return source => vm.runInContext(source, context);
 }
+
+test("calendar renders every day of the month without the removed allocation element", () => {
+  const run = load({ getItem: () => null }, new Date("2026-11-08T12:00:00Z"));
+  assert.equal(run('document.getElementById("allocation")'), null);
+  assert.equal(run('byId("calendar").children.filter(day => day.tagName === "button").length'), 30);
+  assert.equal(run('byId("calendar").children.find(day => day.tagName === "button").textContent'), "1");
+  assert.equal(run('byId("calendar").children.at(-1).textContent'), "30");
+});
 
 test("local state survives a fresh application load with balances and history", () => {
   const items = new Map();
