@@ -9,6 +9,7 @@ const pageIds = new Set(Array.from(html.matchAll(/\bid="([^"]+)"/g), match => ma
 
 function load(storage, now = new Date(), storageManager) {
   const elements = new Map();
+  const listeners = new Map();
   const element = tagName => ({
     tagName, children: [],
     addEventListener() {},
@@ -19,6 +20,7 @@ function load(storage, now = new Date(), storageManager) {
   });
   const context = vm.createContext({
     localStorage: storage,
+    listeners,
     crypto: webcrypto,
     navigator: { storage: storageManager },
     Date: class extends Date {
@@ -26,6 +28,7 @@ function load(storage, now = new Date(), storageManager) {
       static now() { return now.getTime(); }
     },
     document: {
+      addEventListener(type, listener, options) { listeners.set(type, { listener, options }); },
       getElementById(id) {
         if (!pageIds.has(id)) return null;
         if (!elements.has(id)) elements.set(id, element());
@@ -41,6 +44,21 @@ function load(storage, now = new Date(), storageManager) {
   }
   return source => vm.runInContext(source, context);
 }
+
+test("wheel scrolling is blocked while browser zoom gestures remain available", () => {
+  const run = load({ getItem: () => null });
+  assert.equal(run('listeners.get("wheel").options.passive'), false);
+  assert.equal(run(`
+    const handleWheel = listeners.get("wheel").listener;
+    function blocked(modifiers) {
+      let prevented = false;
+      handleWheel({ cancelable: true, ...modifiers, preventDefault() { prevented = true; } });
+      return prevented;
+    }
+    blocked({}) && !blocked({ ctrlKey: true }) && !blocked({ metaKey: true })
+      && !blocked({ cancelable: false });
+  `), true);
+});
 
 test("calendar renders every day of the month without the removed allocation element", () => {
   const run = load({ getItem: () => null }, new Date("2026-11-08T12:00:00Z"));

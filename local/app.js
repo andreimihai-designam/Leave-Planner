@@ -432,6 +432,11 @@ function finish() {
   dialog.close();
 }
 
+document.addEventListener("wheel", (event) => {
+  // Ctrl-wheel and trackpad pinch can be browser zoom gestures.
+  if (!event.ctrlKey && !event.metaKey && event.cancelable) event.preventDefault();
+}, { passive: false, capture: true });
+
 dialog.addEventListener("close", () => {
   if (returnFocus?.isConnected) returnFocus.focus();
   else document.querySelector("[data-filter][aria-pressed=true]").focus();
