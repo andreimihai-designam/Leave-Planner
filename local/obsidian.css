@@ -34,10 +34,8 @@ button:hover { background-color: var(--action); border-color: var(--text); }
 .brand { font-size: 1.125rem; }
 .tag { background: var(--inset); color: var(--text); border: 1px solid var(--border); border-radius: 99px; padding: 5px 9px; font-size: .75rem; }
 main { max-width: 1184px; margin: auto; padding: 21.6px 16px 48px; }
-.intro { display: grid; gap: 16px; margin-bottom: 24px; }
 .eyebrow { color: var(--text); font-size: .7rem; font-weight: 800; letter-spacing: .15em; margin: 0 0 6px; }
 h1, h2, p { margin: 0; }
-h1 { font-size: 25px; line-height: 1.1; letter-spacing: -.035em; }
 h2 { font-size: clamp(1.1rem, 4vw, 1.45rem); }
 .muted, small { color: var(--text); }
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space); }
@@ -84,7 +82,6 @@ textarea { resize: vertical; }
 .detail p + p, #dialog-body > p + p { margin-top: 8px; }
 #dialog-body > .actions { margin-top: 16px; }
 @media (min-width: 540px) {
-  .intro { grid-template-columns: 1fr auto; align-items: center; }
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .stats article:first-child { grid-column: auto; }
   .stats article, .panel { padding: 19.6px; }

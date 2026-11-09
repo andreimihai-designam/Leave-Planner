@@ -442,7 +442,6 @@ dialog.addEventListener("close", () => {
   else document.querySelector("[data-filter][aria-pressed=true]").focus();
 });
 byId("close").addEventListener("click", () => dialog.close());
-byId("add").addEventListener("click", () => showForm("create"));
 for (const [id, direction] of [["prev", -1], ["next", 1]]) {
   byId(id).addEventListener("click", () => {
     month.setUTCMonth(month.getUTCMonth() + direction);
