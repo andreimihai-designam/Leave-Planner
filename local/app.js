@@ -514,5 +514,9 @@ byId("language-picker").addEventListener("keydown", event => {
     byId("language-toggle").focus();
   }
 });
+document.addEventListener("click", event => {
+  const picker = byId("language-picker");
+  if (picker.open && !picker.contains(event.target)) picker.open = false;
+}, { capture: true });
 
 applyLanguage();

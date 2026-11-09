@@ -47,32 +47,47 @@ function load(storage, now = new Date(), storageManager) {
 }
 
 test("saved language localizes the calendar and errors without changing entry values", () => {
-  const storage = { getItem: key => key.endsWith(".language") ? "de" : null };
+  const storage = { getItem: key => key.endsWith(".language") ? "it" : null };
   const run = load(storage, new Date("2026-11-08T12:00:00Z"));
-  assert.equal(run("document.documentElement.lang"), "de");
-  assert.equal(run('byId("language-name").textContent'), "Deutsch");
-  assert.equal(run('byId("month").textContent'), "November 2026");
-  assert.equal(run("validate({})"), "Gib beide Daten ein.");
-  assert.equal(run('t("Planificat")'), "Geplant");
+  assert.equal(run("document.documentElement.lang"), "it");
+  assert.equal(run('byId("language-name").textContent'), "Italiano");
+  assert.equal(run('byId("month").textContent'), "novembre 2026");
+  assert.equal(run("validate({})"), "Inserisci entrambe le date.");
+  assert.equal(run('t("Planificat")'), "Pianificato");
   assert.equal(run('language = "fr"; holidayLabel("Ziua Copilului · A doua zi de Rusalii")'),
     "Journée des enfants · Lundi de Pentecôte");
   assert.equal(run('language = "en"; t("Efectuat")'), "Taken");
   assert.match(html, /<option value="Planificat" data-text="Planificat">/);
 });
 
-test("all twelve languages have a selector option and complete translation keys", () => {
+test("all four languages have a selector option and complete translation keys", () => {
   const run = load({ getItem: () => null });
-  assert.equal(run("Object.keys(languages).length"), 12);
-  for (const code of ["ro", "en", "de", "fr", "es", "it", "zh", "ja", "ko", "ru", "pl", "cs"]) {
+  assert.equal(run("Object.keys(languages).length"), 4);
+  for (const code of ["en", "fr", "es", "it"]) {
     assert.ok(html.includes('data-language="' + code + '"'));
     assert.equal(run(`language = "${code}"; [...translations].every(([source, values]) => {
-      if (language === "ro") return true;
+
       const translated = values[language];
       if (!translated) return false;
       const placeholders = value => [...value.matchAll(/\\{\\d+\\}/g)].map(match => match[0]).sort().join();
       return placeholders(source) === placeholders(translated);
     })`), true, code);
   }
+});
+
+test("an outside click closes the language picker and removed preferences fall back to English", () => {
+  const run = load({ getItem: key => key.endsWith(".language") ? "ro" : null });
+  assert.equal(run("document.documentElement.lang"), "en");
+  assert.equal(run(`
+    const picker = byId("language-picker");
+    picker.open = true;
+    picker.contains = target => target === picker;
+    const click = listeners.get("click").listener;
+    click({ target: picker });
+    const stayedOpen = picker.open;
+    click({ target: {} });
+    stayedOpen && !picker.open;
+  `), true);
 });
 
 test("wheel scrolling is blocked while browser zoom gestures remain available", () => {
@@ -140,7 +155,7 @@ test("local state survives a fresh application load with balances and history", 
   assert.equal(reload("balance(2026).available"), 6);
   assert.equal(reload("balance(2027, 1).available"), 25);
   assert.equal(reload("balance(2027, 6).available"), 20);
-  assert.match(reload("validate({ ...state.entries[0], id: 'another' })"), /suprapune/);
+  assert.match(reload("validate({ ...state.entries[0], id: 'another' })"), /overlaps/);
   assert.equal(reload("saveEntry({ ...state.entries[0], deleted: true }, 'Șters', {})"), true);
   assert.equal(load(storage)("balance(2026).available"), 7);
   assert.equal(reload("saveEntry({ ...state.entries[0], deleted: false }, 'Restaurat', {})"), true);
@@ -219,12 +234,12 @@ test("carryover expires after May 31, funds early leave first, and never carries
   `);
   assert.equal(run("balance(2027, 5).available"), 7);
   assert.equal(run("validate(early)"), "");
-  assert.match(run("validate(late)"), /Sold insuficient/);
+  assert.match(run("validate(late)"), /Insufficient balance/);
   assert.equal(run("saveEntry(early, 'Adăugat', {})"), true);
   assert.equal(run("balance(2027, 5).carried"), 6);
   assert.equal(run("balance(2027, 6).available"), 0);
   assert.equal(run("balance(2028, 1).carried"), 0);
-  assert.match(run(`validate({ ...early, id: "prior", start: "2026-12-22", end: "2026-12-31" })`), /Sold insuficient pentru anul 2027/);
+  assert.match(run(`validate({ ...early, id: "prior", start: "2026-12-22", end: "2026-12-31" })`), /Insufficient balance for 2027/);
 });
 
 test("calendar excludes Romanian holidays and weekends in the supported period", () => {
