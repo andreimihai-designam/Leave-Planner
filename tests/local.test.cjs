@@ -50,6 +50,27 @@ test("calendar renders every day of the month without the removed allocation ele
   assert.equal(run('byId("calendar").children.at(-1).textContent'), "30");
 });
 
+test("validating planned and pending leave moves days from reserved to taken", () => {
+  const items = new Map();
+  const storage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };
+  const run = load(storage);
+  run(`
+    for (const [day, status] of [["2026-11-16", "Planificat"], ["2026-11-17", "În așteptare"]]) {
+      saveEntry({ id: day, start: day, end: day, type: leaveType, status, notes: "" }, "Adăugat", {});
+    }
+  `);
+  assert.equal(run("balance(2026).reserved"), 2);
+  assert.equal(run("completeLeave(state.entries[0], {})"), true);
+  assert.equal(run("completeLeave(state.entries[1], {})"), true);
+  assert.equal(run("completeLeave(state.entries[0], {})"), false);
+  assert.equal(run('canConfirmLeave({ status: "Planificat", deleted: true })'), false);
+  const reopened = load(storage);
+  assert.equal(reopened("balance(2026).reserved"), 0);
+  assert.equal(reopened("balance(2026).used"), 2);
+  assert.equal(reopened("balance(2026).available"), 5);
+  assert.equal(reopened('state.audit.filter(event => event.label === "Concediu validat ca efectuat").length'), 2);
+});
+
 test("local state survives a fresh application load with balances and history", () => {
   const items = new Map();
   const storage = { getItem: key => items.get(key) ?? null, setItem: (key, value) => items.set(key, value) };

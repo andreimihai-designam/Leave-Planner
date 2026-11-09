@@ -40,7 +40,7 @@ h1 { font-size: clamp(1.9rem, 6vw, 3.1rem); line-height: 1.1; letter-spacing: -.
 h2 { font-size: clamp(1.1rem, 4vw, 1.45rem); }
 .muted, small { color: var(--text); }
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space); }
-.stats article, .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.stats article, .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 98%; min-width: 0; padding: 11.76px; }
 .stats article:first-child { grid-column: 1 / -1; }
 .stats span, .stats small { font-size: .8rem; }
 .stats strong { display: block; font-size: 2rem; color: var(--text); }
@@ -86,12 +86,23 @@ textarea { resize: vertical; }
   .intro { grid-template-columns: 1fr auto; align-items: end; }
   .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .stats article:first-child { grid-column: auto; }
-  .stats article, .panel, dialog { padding: 20px; }
+  .stats article, .panel { padding: 19.6px; }
+  dialog { padding: 20px; }
   .fields { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 880px) {
   main { padding-top: 42px; }
-  .workspace { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); align-items: start; }
+  .workspace {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1.4fr);
+    grid-template-areas: "stats register" "backup register" "feedback register" "calendar register";
+    grid-template-rows: auto auto auto 1fr;
+    align-items: start;
+  }
+  .stats { grid-area: stats; }
+  .backup-actions { grid-area: backup; }
+  #feedback { grid-area: feedback; }
+  .calendar-panel { grid-area: calendar; }
+  .register-panel { grid-area: register; }
   .calendar, .week { gap: 8px; }
   .day { min-height: 56px; }
 }

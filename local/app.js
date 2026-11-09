@@ -239,7 +239,18 @@ function showDetails(entry) {
     controls.unshift(button("Modifică", () => showForm("edit", entry), "primary"));
     controls.push(button("Anulează concediul", () => confirmChange(entry, "cancel"), "danger"));
   }
+  if (canConfirmLeave(entry)) {
+    controls.unshift(button("Validează concediul", () => confirmChange(entry, "complete"), "primary"));
+  }
   actions(...controls);
+}
+
+function canConfirmLeave(entry) {
+  return !entry.deleted && ["Planificat", "În așteptare"].includes(entry.status);
+}
+
+function completeLeave(entry, error) {
+  return canConfirmLeave(entry) && saveEntry({ ...entry, status: "Efectuat" }, "Concediu validat ca efectuat", error);
 }
 
 function estimateText(entry) {
@@ -362,10 +373,11 @@ function confirmChange(entry, operation) {
     restore: ["Restaurează înregistrarea", "Intrarea revine cu starea „" + entry.status + "”."],
     delete: ["Șterge înregistrarea", "O poți recupera din secțiunea Șterse."],
     cancel: ["Anulează concediul", "Intrarea rămâne în Istoric cu starea „Anulat”."],
+    complete: ["Confirmă validarea", "Intervalul trece din „" + entry.status + "” în „Efectuat”."],
   };
   open(labels[operation][0]);
   body.append(paragraph(rangeLabel(entry)), paragraph(labels[operation][1], "muted"));
-  if (entry.type === leaveType && entry.status !== "Anulat") {
+  if (entry.type === leaveType && entry.status !== "Anulat" && operation !== "complete") {
     const impact = operation === "restore" ? "Se reintroduce în calcul" : "Se eliberează din sold";
     body.append(paragraph(impact + " · " + estimateText(entry) + "."));
   }
@@ -382,6 +394,10 @@ function confirmChange(entry, operation) {
   error.setAttribute("role", "alert");
   body.append(error);
   actions(button("Înapoi", () => showDetails(entry)), button(labels[operation][0], () => {
+    if (operation === "complete") {
+      if (completeLeave(entry, error)) finish("Concediu validat ca efectuat");
+      return;
+    }
     if (reason && !reason.value.trim()) {
       error.textContent = "Introdu motivul anulării.";
       reason.focus();
@@ -405,7 +421,7 @@ function confirmChange(entry, operation) {
       const label = "Concediu anulat";
       if (saveEntry({ ...entry, status: "Anulat" }, label, error, reason?.value.trim())) finish(label);
     }
-  }, operation === "restore" ? "primary" : "danger"));
+  }, operation === "restore" || operation === "complete" ? "primary" : "danger"));
 }
 
 function saveEntry(entry, label, error, reason) {

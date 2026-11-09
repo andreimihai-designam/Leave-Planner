@@ -7,7 +7,7 @@ A Romanian-language leave planner that runs in the browser. The app starts with 
 - Plans leave by day or date range in a responsive calendar.
 - Calculates deductible days across years, skipping weekends and Romanian statutory holidays. Movable holidays use Orthodox dates.
 - Automatically allocates 7 days in 2026 and 20 days at the start of every year from 2027. Uses the previous year's remaining days first for leave through May 31, inclusive.
-- Supports editing, duplication, cancellation with history, soft deletion, and restoration. A single day can be removed from a range directly from the calendar.
+- Supports editing, duplication, confirmation as taken, cancellation with history, soft deletion, and restoration. A single day can be removed from a range directly from the calendar.
 - Stores records in the current browser with JSON export and import.
 
 ## Run locally

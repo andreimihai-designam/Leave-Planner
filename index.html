@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Leave Planner</title>
-<link rel="stylesheet" href="local/obsidian.css?v=0.3.8">
-<script src="local/storage.js?v=0.3.8" defer></script>
-<script src="local/calendar.js?v=0.3.8" defer></script>
-<script src="local/app.js?v=0.3.8" defer></script>
+<link rel="stylesheet" href="local/obsidian.css?v=0.3.9">
+<script src="local/storage.js?v=0.3.9" defer></script>
+<script src="local/calendar.js?v=0.3.9" defer></script>
+<script src="local/app.js?v=0.3.9" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Sari la conținut</a>
@@ -19,19 +19,19 @@
     <div><p class="eyebrow">PLANIFICARE PERSONALĂ</p><h1>Concediile mele</h1></div>
     <button class="primary" id="add">＋ Adaugă concediu</button>
   </div>
+  <div class="workspace">
   <section class="stats" aria-label="Sold anual">
     <article><span>Disponibile <span id="year"></span></span><strong id="available"></strong><small id="carry">zile de concediu</small></article>
     <article><span>Rezervate</span><strong id="reserved"></strong><small>planificate și în așteptare</small></article>
     <article><span>Efectuate</span><strong id="used"></strong><small>zile confirmate</small></article>
   </section>
-  <div class="actions">
+  <div class="actions backup-actions">
     <button id="export">Exportă backup</button>
     <button id="import">Importă backup</button>
     <input type="file" id="backup-file" accept=".json,application/json" hidden>
   </div>
   <p id="feedback" role="status"></p>
-  <div class="workspace">
-    <section class="panel" aria-labelledby="month">
+    <section class="panel calendar-panel" aria-labelledby="month">
       <div class="panel-head">
         <div><p class="eyebrow">CALENDAR</p><h2 id="month" aria-live="polite"></h2></div>
         <div class="arrows"><button id="prev" aria-label="Luna anterioară">‹</button><button id="next" aria-label="Luna următoare">›</button></div>
@@ -45,7 +45,7 @@
         <span><span class="legend-key workday" aria-hidden="true"></span> Zi lucrătoare</span>
       </p>
     </section>
-    <section class="panel" aria-labelledby="entries-title">
+    <section class="panel register-panel" aria-labelledby="entries-title">
       <div class="panel-head"><div><p class="eyebrow">REGISTRU</p><h2 id="entries-title">Înregistrări</h2></div></div>
       <div class="filters" aria-label="Filtru înregistrări">
         <button data-filter="active" aria-pressed="true">Active</button>
