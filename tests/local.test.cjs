@@ -60,6 +60,21 @@ test("saved language localizes the calendar and errors without changing entry va
   assert.match(html, /<option value="Planificat" data-text="Planificat">/);
 });
 
+test("all twelve languages have a selector option and complete translation keys", () => {
+  const run = load({ getItem: () => null });
+  assert.equal(run("Object.keys(languages).length"), 12);
+  for (const code of ["ro", "en", "de", "fr", "es", "it", "zh", "ja", "ko", "ru", "pl", "cs"]) {
+    assert.ok(html.includes('data-language="' + code + '"'));
+    assert.equal(run(`language = "${code}"; [...translations].every(([source, values]) => {
+      if (language === "ro") return true;
+      const translated = values[language];
+      if (!translated) return false;
+      const placeholders = value => [...value.matchAll(/\\{\\d+\\}/g)].map(match => match[0]).sort().join();
+      return placeholders(source) === placeholders(translated);
+    })`), true, code);
+  }
+});
+
 test("wheel scrolling is blocked while browser zoom gestures remain available", () => {
   const run = load({ getItem: () => null });
   assert.equal(run('listeners.get("wheel").options.passive'), false);

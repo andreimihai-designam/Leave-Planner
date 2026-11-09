@@ -36,16 +36,24 @@ button:hover { background-color: var(--action); border-color: var(--text); }
 main { max-width: 1184px; margin: auto; padding: 21.6px 16px calc(76px + env(safe-area-inset-bottom)) ; }
 .language-picker { position: fixed; z-index: 4; right: calc(16px + env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); color: #fff; }
 .language-picker summary, .language-options button { display: flex; align-items: center; gap: 8px; min-height: var(--target); padding: 6px 12px; cursor: pointer; }
-.language-picker summary { list-style: none; background: var(--square-stroke); border: 1px solid var(--border); border-radius: 9px; }
+.language-picker summary { justify-content: center; width: var(--target); padding: 0; list-style: none; background: var(--square-stroke); border: 1px solid var(--border); border-radius: 50%; }
 .language-picker summary::-webkit-details-marker { display: none; }
-.language-picker summary::after { content: "▾"; margin-inline-start: auto; }
-.language-options { position: absolute; bottom: calc(100% + 6px); right: 0; min-width: 100%; background: var(--square-stroke); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
+#language-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.language-options { position: absolute; bottom: calc(100% + 6px); right: 0; min-width: 100%; max-height: min(60dvh, 480px); overflow-y: auto; overscroll-behavior: contain; background: var(--square-stroke); border: 1px solid var(--border); border-radius: 9px; padding: 4px; }
 .language-options button { width: 100%; white-space: nowrap; border-color: transparent; }
 .language-options button[aria-pressed="true"] { background: var(--action); }
 .flag { flex: none; width: 18px; height: 12px; border-radius: 2px; background-size: cover; }
 .flag-ro { background-image: linear-gradient(90deg, #002b7f 33.33%, #fcd116 33.33% 66.67%, #ce1126 66.67%); }
 .flag-de { background-image: linear-gradient(#000 33.33%, #d00 33.33% 66.67%, #ffce00 66.67%); }
 .flag-fr { background-image: linear-gradient(90deg, #0055a4 33.33%, #fff 33.33% 66.67%, #ef4135 66.67%); }
+.flag-es { background-image: linear-gradient(#aa151b 25%, #f1bf00 25% 75%, #aa151b 75%); }
+.flag-it { background-image: linear-gradient(90deg, #009246 33.33%, #fff 33.33% 66.67%, #ce2b37 66.67%); }
+.flag-ja { background-image: radial-gradient(circle, #bc002d 0 3.5px, #fff 3.6px); }
+.flag-ru { background-image: linear-gradient(#fff 33.33%, #0039a6 33.33% 66.67%, #d52b1e 66.67%); }
+.flag-pl { background-image: linear-gradient(#fff 50%, #dc143c 50%); }
+.flag-cs { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cpath fill='white' d='M0 0h60v40H0z'/%3E%3Cpath fill='%23d7141a' d='M0 20h60v20H0z'/%3E%3Cpath fill='%2311457e' d='M0 0l30 20L0 40z'/%3E%3C/svg%3E"); }
+.flag-zh { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cpath fill='%23de2910' d='M0 0h60v40H0z'/%3E%3Cpath fill='%23ffde00' d='m10 4 1.5 4.5h4.7l-3.8 2.8 1.4 4.5-3.8-2.8-3.8 2.8 1.4-4.5-3.8-2.8h4.7z'/%3E%3Cg fill='%23ffde00'%3E%3Ccircle cx='19' cy='4' r='1.1'/%3E%3Ccircle cx='23' cy='8' r='1.1'/%3E%3Ccircle cx='23' cy='13' r='1.1'/%3E%3Ccircle cx='19' cy='17' r='1.1'/%3E%3C/g%3E%3C/svg%3E"); }
+.flag-ko { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cpath fill='white' d='M0 0h60v40H0z'/%3E%3Cg transform='rotate(33 30 20)'%3E%3Ccircle cx='30' cy='20' r='10' fill='%230047a0'/%3E%3Cpath fill='%23cd2e3a' d='M20 20a10 10 0 0 1 20 0 5 5 0 0 1-10 0 5 5 0 0 0-10 0z'/%3E%3Cpath stroke='black' stroke-width='1.5' d='M10 4v10m3-10v10m3-10v10m28 12v10m3-10v10m3-10v10'/%3E%3C/g%3E%3Cpath stroke='black' stroke-width='1.5' d='m44 8 8 5m-6-8 8 5m-12 1 8 5M8 30l8 5m-6-8 8 5m-12 1 8 5'/%3E%3C/svg%3E"); }
 .flag-en { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 40'%3E%3Cpath fill='%23012169' d='M0 0h60v40H0z'/%3E%3Cpath stroke='white' stroke-width='8' d='m0 0 60 40m0-40L0 40'/%3E%3Cpath stroke='%23c8102e' stroke-width='3' d='m0 0 60 40m0-40L0 40'/%3E%3Cpath stroke='white' stroke-width='12' d='M30 0v40M0 20h60'/%3E%3Cpath stroke='%23c8102e' stroke-width='7' d='M30 0v40M0 20h60'/%3E%3C/svg%3E"); }
 .eyebrow { color: var(--text); font-size: .7rem; font-weight: 800; letter-spacing: .15em; margin: 0 0 6px; }
 h1, h2, p { margin: 0; }

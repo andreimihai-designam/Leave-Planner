@@ -1,6 +1,6 @@
 # Leave Planner
 
-A browser-based leave planner with Romanian, English, German, and French interfaces. The app starts with an empty register.
+A browser-based leave planner with Romanian, English, German, French, Spanish, Italian, Simplified Chinese, Japanese, Korean, Russian, Polish, and Czech interfaces. The app starts with an empty register.
 
 ## What it does
 
