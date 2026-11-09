@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Leave Planner</title>
-<link rel="stylesheet" href="local/obsidian.css?v=0.3.9">
-<script src="local/storage.js?v=0.3.9" defer></script>
-<script src="local/calendar.js?v=0.3.9" defer></script>
-<script src="local/app.js?v=0.3.9" defer></script>
+<link rel="stylesheet" href="local/obsidian.css?v=0.3.10">
+<script src="local/storage.js?v=0.3.10" defer></script>
+<script src="local/calendar.js?v=0.3.10" defer></script>
+<script src="local/app.js?v=0.3.10" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Sari la conținut</a>
@@ -25,12 +25,14 @@
     <article><span>Rezervate</span><strong id="reserved"></strong><small>planificate și în așteptare</small></article>
     <article><span>Efectuate</span><strong id="used"></strong><small>zile confirmate</small></article>
   </section>
-  <div class="actions backup-actions">
-    <button id="export">Exportă backup</button>
-    <button id="import">Importă backup</button>
-    <input type="file" id="backup-file" accept=".json,application/json" hidden>
+  <div class="backup-tools">
+    <div class="actions">
+      <button id="export">Exportă backup</button>
+      <button id="import">Importă backup</button>
+      <input type="file" id="backup-file" accept=".json,application/json" hidden>
+    </div>
+    <p id="feedback" role="alert"></p>
   </div>
-  <p id="feedback" role="status"></p>
     <section class="panel calendar-panel" aria-labelledby="month">
       <div class="panel-head">
         <div><p class="eyebrow">CALENDAR</p><h2 id="month" aria-live="polite"></h2></div>

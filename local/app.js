@@ -310,7 +310,7 @@ function showForm(mode, source = {}) {
     const label = mode === "edit" ? "Înregistrare modificată" : mode === "copy" ? "Înregistrare duplicată" : "Înregistrare adăugată";
     if (saveEntry(entry, label, error)) {
       month = new Date(entry.start.slice(0, 7) + "-01");
-      finish(label);
+      finish();
     }
   });
   preview();
@@ -348,11 +348,6 @@ function deleteDay(entry, key, error) {
   return commit({ ...state, entries, audit }, error) ? deleted : null;
 }
 
-function offerRestore(entry, label) {
-  finish(label);
-  byId("feedback").append(" ", button("Anulează ștergerea", () => confirmChange(entry, "restore")));
-}
-
 function confirmDeleteDay(entry, key) {
   open("Șterge această zi");
   const selected = { ...entry, start: key, end: key };
@@ -364,7 +359,7 @@ function confirmDeleteDay(entry, key) {
   body.append(error);
   actions(button("Înapoi", () => showDay(key)), button("Confirmă ștergerea zilei", () => {
     const deleted = deleteDay(entry, key, error);
-    if (deleted) offerRestore(deleted, "Zi mutată în Șterse");
+    if (deleted) finish();
   }, "danger"));
 }
 
@@ -395,7 +390,7 @@ function confirmChange(entry, operation) {
   body.append(error);
   actions(button("Înapoi", () => showDetails(entry)), button(labels[operation][0], () => {
     if (operation === "complete") {
-      if (completeLeave(entry, error)) finish("Concediu validat ca efectuat");
+      if (completeLeave(entry, error)) finish();
       return;
     }
     if (reason && !reason.value.trim()) {
@@ -410,16 +405,16 @@ function confirmChange(entry, operation) {
         return;
       }
       const label = "Înregistrare restaurată";
-      if (saveEntry({ ...entry, deleted: false }, label, error)) finish(label);
+      if (saveEntry({ ...entry, deleted: false }, label, error)) finish();
     }
     if (operation === "delete") {
       const label = "Înregistrare mutată în Șterse";
       const deleted = { ...entry, deleted: true };
-      if (saveEntry(deleted, label, error)) offerRestore(deleted, label);
+      if (saveEntry(deleted, label, error)) finish();
     }
     if (operation === "cancel") {
       const label = "Concediu anulat";
-      if (saveEntry({ ...entry, status: "Anulat" }, label, error, reason?.value.trim())) finish(label);
+      if (saveEntry({ ...entry, status: "Anulat" }, label, error, reason?.value.trim())) finish();
     }
   }, operation === "restore" || operation === "complete" ? "primary" : "danger"));
 }
@@ -431,9 +426,9 @@ function saveEntry(entry, label, error, reason) {
   return commit({ ...state, entries, audit: [...state.audit, event] }, error);
 }
 
-function finish(label) {
+function finish() {
   render();
-  byId("feedback").textContent = label + ".";
+  byId("feedback").textContent = "";
   dialog.close();
 }
 
@@ -480,7 +475,7 @@ byId("backup-file").addEventListener("change", async event => {
     error.setAttribute("role", "alert");
     body.append(error);
     actions(button("Renunță", () => dialog.close()), button("Înlocuiește datele", () => {
-      if (commit(data, error)) finish("Backup importat");
+      if (commit(data, error)) finish();
     }, "primary"));
   } catch {
     byId("feedback").textContent = "Fișierul nu este un backup Leave Planner valid. Datele locale au fost păstrate.";
