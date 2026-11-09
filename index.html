@@ -4,74 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Leave Planner</title>
-<link rel="stylesheet" href="local/obsidian.css?v=0.3.17">
+<link rel="stylesheet" href="local/obsidian.css?v=0.3.18">
 <script src="local/storage.js?v=0.3.11" defer></script>
 <script src="local/calendar.js?v=0.3.11" defer></script>
-<script src="local/app.js?v=0.3.17" defer></script>
+<script src="local/i18n.js?v=0.3.18" defer></script>
+<script src="local/app.js?v=0.3.18" defer></script>
 </head>
 <body>
-<a class="skip" href="#main">Sari la conținut</a>
+<a class="skip" href="#main"><span data-text="Sari la conținut">Sari la conținut</span></a>
 <header class="top">
   <h1 class="brand">Leave Planner</h1>
 </header>
 <main id="main" tabindex="-1">
   <div class="workspace">
-  <section class="stats" aria-label="Sold anual">
-    <article><span>Disponibile <span id="year"></span></span><strong id="available"></strong><small id="carry">zile de concediu</small></article>
-    <article><span>Rezervate</span><strong id="reserved"></strong><small>planificate și în așteptare</small></article>
-    <article><span>Efectuate</span><strong id="used"></strong><small>zile confirmate</small></article>
+  <section class="stats" aria-label="Sold anual" data-label="Sold anual">
+    <article><span><span data-text="Disponibile">Disponibile</span> <span id="year"></span></span><strong id="available"></strong><small id="carry"><span data-text="zile de concediu">zile de concediu</span></small></article>
+    <article><span><span data-text="Rezervate">Rezervate</span></span><strong id="reserved"></strong><small><span data-text="planificate și în așteptare">planificate și în așteptare</span></small></article>
+    <article><span><span data-text="Efectuate">Efectuate</span></span><strong id="used"></strong><small><span data-text="zile confirmate">zile confirmate</span></small></article>
   </section>
   <div class="backup-tools">
     <div class="actions">
-      <button id="export">Exportă backup</button>
-      <button id="import">Importă backup</button>
+      <button id="export"><span data-text="Exportă backup">Exportă backup</span></button>
+      <button id="import"><span data-text="Importă backup">Importă backup</span></button>
       <input type="file" id="backup-file" accept=".json,application/json" hidden>
     </div>
     <p id="feedback" role="alert"></p>
   </div>
     <section class="panel calendar-panel" aria-labelledby="month">
       <div class="panel-head">
-        <div><p class="eyebrow">CALENDAR</p><h2 id="month" aria-live="polite"></h2></div>
-        <div class="arrows"><button id="prev" aria-label="Luna anterioară">‹</button><button id="next" aria-label="Luna următoare">›</button></div>
+        <div><p class="eyebrow"><span data-text="CALENDAR">CALENDAR</span></p><h2 id="month" aria-live="polite"></h2></div>
+        <div class="arrows"><button id="prev" aria-label="Luna anterioară" data-label="Luna anterioară">‹</button><button id="next" aria-label="Luna următoare" data-label="Luna următoare">›</button></div>
       </div>
-      <div class="week" aria-hidden="true"><span>Lun</span><span>Mar</span><span>Mie</span><span>Joi</span><span>Vin</span><span>Sâm</span><span>Dum</span></div>
-      <div class="calendar" id="calendar" aria-label="Zilele lunii"></div>
+      <div class="week" aria-hidden="true"><span><span data-text="Lun">Lun</span></span><span><span data-text="Mar">Mar</span></span><span><span data-text="Mie">Mie</span></span><span><span data-text="Joi">Joi</span></span><span><span data-text="Vin">Vin</span></span><span><span data-text="Sâm">Sâm</span></span><span><span data-text="Dum">Dum</span></span></div>
+      <div class="calendar" id="calendar" aria-label="Zilele lunii" data-label="Zilele lunii"></div>
       <p class="legend">
-        <span><span class="legend-key leave" aria-hidden="true">●</span> Concediu activ</span>
-        <span><span class="legend-key holiday" aria-hidden="true">✦</span> Sărbătoare legală</span>
-        <span><span class="legend-key weekend" aria-hidden="true"></span> Weekend</span>
-        <span><span class="legend-key workday" aria-hidden="true"></span> Zi lucrătoare</span>
+        <span><span class="legend-key leave" aria-hidden="true">●</span> <span data-text="Concediu activ">Concediu activ</span></span>
+        <span><span class="legend-key holiday" aria-hidden="true">✦</span> <span data-text="Sărbătoare legală">Sărbătoare legală</span></span>
+        <span><span class="legend-key weekend" aria-hidden="true"></span> <span data-text="Weekend">Weekend</span></span>
+        <span><span class="legend-key workday" aria-hidden="true"></span> <span data-text="Zi lucrătoare">Zi lucrătoare</span></span>
       </p>
     </section>
     <section class="panel register-panel" aria-labelledby="entries-title">
-      <div class="panel-head"><div><p class="eyebrow">REGISTRU</p><h2 id="entries-title">Înregistrări</h2></div></div>
-      <div class="filters" aria-label="Filtru înregistrări">
-        <button data-filter="active" aria-pressed="true">Active</button>
-        <button data-filter="history" aria-pressed="false">Istoric</button>
-        <button data-filter="deleted" aria-pressed="false">Șterse</button>
+      <div class="panel-head"><div><p class="eyebrow"><span data-text="REGISTRU">REGISTRU</span></p><h2 id="entries-title"><span data-text="Înregistrări">Înregistrări</span></h2></div></div>
+      <div class="filters" aria-label="Filtru înregistrări" data-label="Filtru înregistrări">
+        <button data-filter="active" aria-pressed="true"><span data-text="Active">Active</span></button>
+        <button data-filter="history" aria-pressed="false"><span data-text="Istoric">Istoric</span></button>
+        <button data-filter="deleted" aria-pressed="false"><span data-text="Șterse">Șterse</span></button>
       </div>
       <div id="entries"></div>
     </section>
   </div>
 </main>
+<details id="language-picker" class="language-picker">
+  <summary id="language-toggle" aria-label="Limbă" data-label="Limbă"><span id="language-flag" class="flag flag-ro" aria-hidden="true"></span><span id="language-name">Română</span></summary>
+  <div class="language-options">
+    <button type="button" lang="ro" data-language="ro" aria-pressed="true"><span class="flag flag-ro" aria-hidden="true"></span>Română</button>
+    <button type="button" lang="en" data-language="en" aria-pressed="false"><span class="flag flag-en" aria-hidden="true"></span>English</button>
+    <button type="button" lang="de" data-language="de" aria-pressed="false"><span class="flag flag-de" aria-hidden="true"></span>Deutsch</button>
+    <button type="button" lang="fr" data-language="fr" aria-pressed="false"><span class="flag flag-fr" aria-hidden="true"></span>Français</button>
+  </div>
+</details>
 <dialog id="dialog" aria-labelledby="dialog-title">
-  <div class="panel-head"><h2 id="dialog-title"></h2><button id="close" aria-label="Închide">×</button></div>
+  <div class="panel-head"><h2 id="dialog-title"></h2><button id="close" aria-label="Închide" data-label="Închide">×</button></div>
   <div id="dialog-body"></div>
 </dialog>
 <template id="leave-form">
   <form>
     <div class="fields">
-      <label>Data de început<input name="start" type="date" required></label>
-      <label>Data de sfârșit<input name="end" type="date" required></label>
+      <label><span data-text="Data de început">Data de început</span><input name="start" type="date" required></label>
+      <label><span data-text="Data de sfârșit">Data de sfârșit</span><input name="end" type="date" required></label>
     </div>
     <div class="fields">
-      <label>Tip<select name="type"><option>Concediu de odihnă</option><option>Altă absență</option></select></label>
-      <label>Stare<select name="status"><option>Planificat</option><option>În așteptare</option><option>Efectuat</option></select></label>
+      <label><span data-text="Tip">Tip</span><select name="type"><option value="Concediu de odihnă" data-text="Concediu de odihnă">Concediu de odihnă</option><option value="Altă absență" data-text="Altă absență">Altă absență</option></select></label>
+      <label><span data-text="Stare">Stare</span><select name="status"><option value="Planificat" data-text="Planificat">Planificat</option><option value="În așteptare" data-text="În așteptare">În așteptare</option><option value="Efectuat" data-text="Efectuat">Efectuat</option></select></label>
     </div>
-    <label>Notițe <small>(opțional)</small><textarea name="notes" rows="3" maxlength="500"></textarea></label>
+    <label><span data-text="Notițe">Notițe</span> <small><span data-text="(opțional)">(opțional)</span></small><textarea name="notes" rows="3" maxlength="500"></textarea></label>
     <p class="estimate" aria-live="polite"></p>
     <p class="error" role="alert"></p>
-    <button type="submit" class="primary">Salvează concediul</button>
+    <button type="submit" class="primary"><span data-text="Salvează concediul">Salvează concediul</span></button>
   </form>
 </template>
 </body>

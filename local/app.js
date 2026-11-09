@@ -3,8 +3,6 @@
 const byId = (id) => document.getElementById(id);
 const dialog = byId("dialog");
 const body = byId("dialog-body");
-const format = new Intl.DateTimeFormat("ro-RO", { dateStyle: "long", timeZone: "UTC" });
-const monthFormat = new Intl.DateTimeFormat("ro-RO", { month: "long", year: "numeric", timeZone: "UTC" });
 const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Bucharest", dateStyle: "short" }).format(new Date());
 let month = new Date(today.slice(0, 7) + "-01");
 let state = emptyState();
@@ -23,7 +21,7 @@ try {
   savedRaw = saved.raw;
   storageReady = true;
 } catch {
-  byId("feedback").textContent = "Datele locale nu pot fi citite. Verifică permisiunile de stocare ale browserului.";
+  byId("feedback").textContent = t("Datele locale nu pot fi citite. Verifică permisiunile de stocare ale browserului.");
 }
 
 function commit(data, error) {
@@ -37,7 +35,7 @@ function commit(data, error) {
     }
     return true;
   } catch {
-    error.textContent = "Salvarea a eșuat. Verifică stocarea locală. Dacă ai modificat datele în altă filă, reîncarcă pagina.";
+    error.textContent = t("Salvarea a eșuat. Verifică stocarea locală. Dacă ai modificat datele în altă filă, reîncarcă pagina.");
     return false;
   }
 }
@@ -90,26 +88,26 @@ function projectedBalances(entry) {
 }
 
 function validate(entry, allowNonWorkingDay = false) {
-  if (!entry.start || !entry.end) return "Completează ambele date.";
-  if (entry.end < entry.start) return "Data de sfârșit trebuie să fie în aceeași zi sau după data de început.";
-  if (!validDate(entry.start) || !validDate(entry.end)) return "Alege date între " + minYear + " și " + maxYear + ".";
+  if (!entry.start || !entry.end) return t("Completează ambele date.");
+  if (entry.end < entry.start) return t("Data de sfârșit trebuie să fie în aceeași zi sau după data de început.");
+  if (!validDate(entry.start) || !validDate(entry.end)) return t("Alege date între {0} și {1}.", minYear, maxYear);
   if (!active(entry) || entry.type !== leaveType) return "";
   const days = eligibleDays(entry);
-  if (!days.length) return allowNonWorkingDay ? "" : "Intervalul nu conține zile lucrătoare deductibile.";
+  if (!days.length) return allowNonWorkingDay ? "" : t("Intervalul nu conține zile lucrătoare deductibile.");
   const selected = new Set(days);
   const conflict = state.entries.filter(active).find((other) => other.id !== entry.id && eligibleDays(other).some((day) => selected.has(day)));
-  if (conflict) return "Intervalul se suprapune cu " + rangeLabel(conflict) + ".";
+  if (conflict) return t("Intervalul se suprapune cu {0}.", rangeLabel(conflict));
   const before = balances(state.entries);
   for (const [year, total] of projectedBalances(entry)) {
     if (total.ownRemaining >= Math.min(0, before.get(year).ownRemaining)) continue;
-    return "Sold insuficient pentru anul " + year + ". Zilele reportate pot fi folosite până la 31 mai.";
+    return t("Sold insuficient pentru anul {0}. Zilele reportate pot fi folosite până la 31 mai.", year);
   }
   return "";
 }
 
 function rangeLabel(entry) {
-  const start = format.format(new Date(entry.start));
-  return entry.start === entry.end ? start : start + " – " + format.format(new Date(entry.end));
+  const start = localizedDate(new Date(entry.start), { dateStyle: "long" });
+  return entry.start === entry.end ? start : start + " – " + localizedDate(new Date(entry.end), { dateStyle: "long" });
 }
 
 function button(label, handler, className = "") {
@@ -134,11 +132,11 @@ function render() {
   byId("year").textContent = year;
   byId("available").textContent = totals.available;
   byId("carry").textContent = totals.carried > 0
-    ? totals.carried + " reportate din " + (year - 1) + " · până la 31 mai"
-    : "zile de concediu";
+    ? t("{0} reportate din {1} · până la 31 mai", totals.carried, year - 1)
+    : t("zile de concediu");
   byId("reserved").textContent = totals.reserved;
   byId("used").textContent = totals.used;
-  byId("month").textContent = monthFormat.format(month);
+  byId("month").textContent = localizedDate(month, { month: "long", year: "numeric" });
   byId("prev").disabled = dayKey(month) === minDate;
   byId("next").disabled = dayKey(month) === maxYear + "-12-01";
   const calendar = byId("calendar");
@@ -148,12 +146,12 @@ function render() {
   for (const date = new Date(month); date.getUTCMonth() === month.getUTCMonth(); date.setUTCDate(date.getUTCDate() + 1)) {
     const key = dayKey(date);
     const matches = state.entries.filter((entry) => active(entry) && entry.start <= key && key <= entry.end);
-    const holiday = holidaysFor(year).get(key);
+    const holiday = holidayLabel(holidaysFor(year).get(key));
     const cell = button(String(date.getUTCDate()), () => showDay(key), "day");
     cell.classList.toggle("weekend", isWeekend(date));
     cell.classList.toggle("leave", matches.length > 0);
     cell.classList.toggle("holiday", Boolean(holiday));
-    cell.setAttribute("aria-label", [format.format(date), isWeekend(date) && "weekend", holiday, matches.length && "concediu activ"].filter(Boolean).join(", "));
+    cell.setAttribute("aria-label", [localizedDate(date, { dateStyle: "long" }), isWeekend(date) && t("Weekend"), holiday, matches.length && t("Concediu activ")].filter(Boolean).join(", "));
     if (matches.length || holiday) {
       const icon = document.createElement("span");
       icon.setAttribute("aria-hidden", "true");
@@ -168,12 +166,12 @@ function render() {
 function entryButton(entry) {
   const item = button("", () => showDetails(entry), "entry");
   const title = document.createElement("strong");
-  title.textContent = entry.type;
+  title.textContent = t(entry.type);
   const interval = document.createElement("small");
   interval.textContent = rangeLabel(entry);
   const status = document.createElement("span");
   status.className = "tag";
-  status.textContent = entry.deleted ? "Șters · " + entry.status : entry.status;
+  status.textContent = (entry.deleted ? t("Șters") + " · " : "") + t(entry.status);
   item.append(title, interval, status);
   return item;
 }
@@ -183,7 +181,7 @@ function renderEntries() {
   list.replaceChildren();
   const visible = state.entries.filter((entry) => filter === "deleted" ? entry.deleted : filter === "history" ? !entry.deleted : active(entry));
   for (const entry of visible) list.append(entryButton(entry));
-  if (!visible.length) list.append(paragraph("Nu există înregistrări în această secțiune.", "muted"));
+  if (!visible.length) list.append(paragraph(t("Nu există înregistrări în această secțiune."), "muted"));
 }
 
 function open(title) {
@@ -204,43 +202,43 @@ function actions(...buttons) {
 }
 
 function showDay(key) {
-  open(format.format(new Date(key)));
-  const holiday = holidaysFor(Number(key.slice(0, 4))).get(key);
+  open(localizedDate(new Date(key), { dateStyle: "long" }));
+  const holiday = holidayLabel(holidaysFor(Number(key.slice(0, 4))).get(key));
   if (holiday) body.append(paragraph(holiday, "detail"));
   const matches = state.entries.filter((entry) => active(entry) && entry.start <= key && key <= entry.end);
   for (const entry of matches) {
     body.append(entryButton(entry));
-    const remove = button("Șterge această zi", () => confirmDeleteDay(entry, key), "danger");
-    remove.setAttribute("aria-label", "Șterge această zi · " + entry.type + " · " + rangeLabel(entry));
+    const remove = button(t("Șterge această zi"), () => confirmDeleteDay(entry, key), "danger");
+    remove.setAttribute("aria-label", t("Șterge această zi") + " · " + t(entry.type) + " · " + rangeLabel(entry));
     actions(remove);
   }
-  if (!matches.length) body.append(paragraph("Nicio înregistrare activă pentru această zi.", "muted"));
-  actions(button("Adaugă pentru această zi", () => showForm("create", { start: key, end: key }), "primary"));
+  if (!matches.length) body.append(paragraph(t("Nicio înregistrare activă pentru această zi."), "muted"));
+  actions(button(t("Adaugă pentru această zi"), () => showForm("create", { start: key, end: key }), "primary"));
 }
 
 function showDetails(entry) {
-  open(entry.type);
+  open(t(entry.type));
   const detail = document.createElement("div");
   detail.className = "detail";
-  detail.append(paragraph(rangeLabel(entry)), paragraph(entry.deleted ? "Șters · " + entry.status : entry.status));
+  detail.append(paragraph(rangeLabel(entry)), paragraph((entry.deleted ? t("Șters") + " · " : "") + t(entry.status)));
   if (entry.notes) detail.append(paragraph(entry.notes));
   const events = state.audit.filter((event) => event.id === entry.id);
-  for (const event of events) detail.append(paragraph(format.format(new Date(event.at)) + " · " + event.label, "muted"));
+  for (const event of events) detail.append(paragraph(localizedDate(new Date(event.at), { dateStyle: "long" }) + " · " + localizedHistory(event.label), "muted"));
   body.append(detail);
   if (entry.deleted) {
-    actions(button("Restaurează", () => confirmChange(entry, "restore"), "primary"));
+    actions(button(t("Restaurează"), () => confirmChange(entry, "restore"), "primary"));
     return;
   }
   const controls = [
-    button("Duplică", () => showForm("copy", entry)),
-    button("Șterge", () => confirmChange(entry, "delete"), "danger"),
+    button(t("Duplică"), () => showForm("copy", entry)),
+    button(t("Șterge"), () => confirmChange(entry, "delete"), "danger"),
   ];
   if (active(entry)) {
-    controls.unshift(button("Modifică", () => showForm("edit", entry), "primary"));
-    controls.push(button("Anulează concediul", () => confirmChange(entry, "cancel"), "danger"));
+    controls.unshift(button(t("Modifică"), () => showForm("edit", entry), "primary"));
+    controls.push(button(t("Anulează concediul"), () => confirmChange(entry, "cancel"), "danger"));
   }
   if (canConfirmLeave(entry)) {
-    controls.unshift(button("Validează concediul", () => confirmChange(entry, "complete"), "primary"));
+    controls.unshift(button(t("Validează concediul"), () => confirmChange(entry, "complete"), "primary"));
   }
   actions(...controls);
 }
@@ -255,14 +253,15 @@ function completeLeave(entry, error) {
 
 function estimateText(entry) {
   const counts = countsByYear(eligibleDays(entry));
-  if (!counts.size) return "0 zile deductibile";
-  return [...counts].map(([year, count]) => year + " · " + count + (count === 1 ? " zi deductibilă" : " zile deductibile")).join(" / ");
+  if (!counts.size) return t("0 zile deductibile");
+  return [...counts].map(([year, count]) => year + " · " + t(count === 1 ? "{0} zi deductibilă" : "{0} zile deductibile", count)).join(" / ");
 }
 
 function showForm(mode, source = {}) {
   const title = { create: "Adaugă concediu", edit: "Modifică concediul", copy: "Duplică înregistrarea" };
-  open(title[mode]);
+  open(t(title[mode]));
   const form = byId("leave-form").content.firstElementChild.cloneNode(true);
+  localize(form);
   body.append(form);
   for (const field of ["start", "end", "type", "status", "notes"]) {
     const dateField = field === "start" || field === "end";
@@ -287,10 +286,10 @@ function showForm(mode, source = {}) {
     const entry = draft();
     error.textContent = "";
     if (!entry.start || !entry.end) {
-      estimate.textContent = "Alege un interval pentru a calcula zilele deductibile.";
+      estimate.textContent = t("Alege un interval pentru a calcula zilele deductibile.");
       return;
     }
-    const previous = mode === "edit" ? "Înainte · " + estimateText(source) + ". După · " : "";
+    const previous = mode === "edit" ? t("Înainte") + " · " + estimateText(source) + ". " + t("După") + " · " : "";
     estimate.textContent = previous + estimateText(entry) + ".";
     const problem = validate(entry);
     if (problem) {
@@ -342,22 +341,22 @@ function deleteDay(entry, key, error) {
   const audit = [
     ...state.audit,
     ...remaining.map(item => ({ id: item.id, label: "Zi eliminată din interval · " + key, at })),
-    { id: deleted.id, label: "Zi ștearsă din intervalul " + rangeLabel(entry), at },
+    { id: deleted.id, label: "Zi ștearsă din intervalul " + entry.start + " – " + entry.end, at },
   ];
   const entries = state.entries.flatMap(item => item.id === entry.id ? [...remaining, deleted] : [item]);
   return commit({ ...state, entries, audit }, error) ? deleted : null;
 }
 
 function confirmDeleteDay(entry, key) {
-  open("Șterge această zi");
+  open(t("Șterge această zi"));
   const selected = { ...entry, start: key, end: key };
   body.append(paragraph(rangeLabel(selected)));
-  body.append(paragraph("Ziua va fi mutată în Șterse. Celelalte zile din interval rămân în calendar."));
-  if (entry.type === leaveType) body.append(paragraph("Impact asupra soldului · " + estimateText(selected) + "."));
+  body.append(paragraph(t("Ziua va fi mutată în Șterse. Celelalte zile din interval rămân în calendar.")));
+  if (entry.type === leaveType) body.append(paragraph(t("Impact asupra soldului") + " · " + estimateText(selected) + "."));
   const error = paragraph("", "error");
   error.setAttribute("role", "alert");
   body.append(error);
-  actions(button("Înapoi", () => showDay(key)), button("Confirmă ștergerea zilei", () => {
+  actions(button(t("Înapoi"), () => showDay(key)), button(t("Confirmă ștergerea zilei"), () => {
     const deleted = deleteDay(entry, key, error);
     if (deleted) finish();
   }, "danger"));
@@ -365,21 +364,21 @@ function confirmDeleteDay(entry, key) {
 
 function confirmChange(entry, operation) {
   const labels = {
-    restore: ["Restaurează înregistrarea", "Intrarea revine cu starea „" + entry.status + "”."],
+    restore: ["Restaurează înregistrarea", t("Intrarea revine cu starea „{0}”.", t(entry.status))],
     delete: ["Șterge înregistrarea", "O poți recupera din secțiunea Șterse."],
     cancel: ["Anulează concediul", "Intrarea rămâne în Istoric cu starea „Anulat”."],
-    complete: ["Confirmă validarea", "Intervalul trece din „" + entry.status + "” în „Efectuat”."],
+    complete: ["Confirmă validarea", t("Intervalul trece din „{0}” în „Efectuat”.", t(entry.status))],
   };
-  open(labels[operation][0]);
-  body.append(paragraph(rangeLabel(entry)), paragraph(labels[operation][1], "muted"));
+  open(t(labels[operation][0]));
+  body.append(paragraph(rangeLabel(entry)), paragraph(t(labels[operation][1]), "muted"));
   if (entry.type === leaveType && entry.status !== "Anulat" && operation !== "complete") {
     const impact = operation === "restore" ? "Se reintroduce în calcul" : "Se eliberează din sold";
-    body.append(paragraph(impact + " · " + estimateText(entry) + "."));
+    body.append(paragraph(t(impact) + " · " + estimateText(entry) + "."));
   }
   let reason;
   if (operation === "cancel" && entry.status === "Efectuat") {
     const label = document.createElement("label");
-    label.textContent = "Motivul anulării";
+    label.textContent = t("Motivul anulării");
     reason = document.createElement("textarea");
     reason.maxLength = 500;
     label.append(reason);
@@ -388,13 +387,13 @@ function confirmChange(entry, operation) {
   const error = paragraph("", "error");
   error.setAttribute("role", "alert");
   body.append(error);
-  actions(button("Înapoi", () => showDetails(entry)), button(labels[operation][0], () => {
+  actions(button(t("Înapoi"), () => showDetails(entry)), button(t(labels[operation][0]), () => {
     if (operation === "complete") {
       if (completeLeave(entry, error)) finish();
       return;
     }
     if (reason && !reason.value.trim()) {
-      error.textContent = "Introdu motivul anulării.";
+      error.textContent = t("Introdu motivul anulării.");
       reason.focus();
       return;
     }
@@ -473,16 +472,47 @@ byId("backup-file").addEventListener("change", async event => {
   try {
     if (file.size > 5_000_000) throw new Error("Fișier prea mare");
     const data = decodeState(await file.text());
-    open("Importă backup");
-    body.append(paragraph("Importul va înlocui înregistrările și istoricul din acest browser."));
+    open(t("Importă backup"));
+    body.append(paragraph(t("Importul va înlocui înregistrările și istoricul din acest browser.")));
     const error = paragraph("", "error");
     error.setAttribute("role", "alert");
     body.append(error);
-    actions(button("Renunță", () => dialog.close()), button("Înlocuiește datele", () => {
+    actions(button(t("Renunță"), () => dialog.close()), button(t("Înlocuiește datele"), () => {
       if (commit(data, error)) finish();
     }, "primary"));
   } catch {
-    byId("feedback").textContent = "Fișierul nu este un backup Leave Planner valid. Datele locale au fost păstrate.";
+    byId("feedback").textContent = t("Fișierul nu este un backup Leave Planner valid. Datele locale au fost păstrate.");
   }
 });
-render();
+function applyLanguage() {
+  document.documentElement.lang = language;
+  localize(document);
+  byId("language-flag").className = "flag flag-" + language;
+  byId("language-name").textContent = languages[language].name;
+  byId("language-name").lang = language;
+  for (const option of document.querySelectorAll("[data-language]")) {
+    option.setAttribute("aria-pressed", String(option.dataset.language === language));
+  }
+  if (!storageReady) {
+    byId("feedback").textContent = t("Datele locale nu pot fi citite. Verifică permisiunile de stocare ale browserului.");
+  }
+  render();
+}
+
+for (const option of document.querySelectorAll("[data-language]")) {
+  option.addEventListener("click", () => {
+    language = option.dataset.language;
+    try { localStorage.setItem(languageKey, language); } catch { /* Keep the current choice in memory. */ }
+    byId("language-picker").open = false;
+    applyLanguage();
+    byId("language-toggle").focus();
+  });
+}
+byId("language-picker").addEventListener("keydown", event => {
+  if (event.key === "Escape" && byId("language-picker").open) {
+    byId("language-picker").open = false;
+    byId("language-toggle").focus();
+  }
+});
+
+applyLanguage();

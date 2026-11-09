@@ -28,6 +28,7 @@ function load(storage, now = new Date(), storageManager) {
       static now() { return now.getTime(); }
     },
     document: {
+      documentElement: {},
       addEventListener(type, listener, options) { listeners.set(type, { listener, options }); },
       getElementById(id) {
         if (!pageIds.has(id)) return null;
@@ -38,12 +39,26 @@ function load(storage, now = new Date(), storageManager) {
       createElement: element,
     },
   });
-  for (const name of ["storage", "calendar", "app"]) {
+  for (const name of ["storage", "calendar", "i18n", "app"]) {
     const file = join(__dirname, "..", "local", name + ".js");
     vm.runInContext(readFileSync(file, "utf8"), context);
   }
   return source => vm.runInContext(source, context);
 }
+
+test("saved language localizes the calendar and errors without changing entry values", () => {
+  const storage = { getItem: key => key.endsWith(".language") ? "de" : null };
+  const run = load(storage, new Date("2026-11-08T12:00:00Z"));
+  assert.equal(run("document.documentElement.lang"), "de");
+  assert.equal(run('byId("language-name").textContent'), "Deutsch");
+  assert.equal(run('byId("month").textContent'), "November 2026");
+  assert.equal(run("validate({})"), "Gib beide Daten ein.");
+  assert.equal(run('t("Planificat")'), "Geplant");
+  assert.equal(run('language = "fr"; holidayLabel("Ziua Copilului · A doua zi de Rusalii")'),
+    "Journée des enfants · Lundi de Pentecôte");
+  assert.equal(run('language = "en"; t("Efectuat")'), "Taken");
+  assert.match(html, /<option value="Planificat" data-text="Planificat">/);
+});
 
 test("wheel scrolling is blocked while browser zoom gestures remain available", () => {
   const run = load({ getItem: () => null });
